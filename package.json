@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node scripts/login-google.ts",
     "start:puppeteer": "ts-node scripts/login-google-puppeteer.ts",
+    "start:demo": "ts-node scripts/demo-browser.ts",
     "build": "tsc",
     "clean": "rimraf dist",
     "lint": "eslint . --ext .ts",

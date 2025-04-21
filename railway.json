@@ -7,6 +7,6 @@
   "deploy": {
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10,
-    "startCommand": "/bin/bash -c \"npm run start:puppeteer && tail -f /dev/null\""
+    "startCommand": "/bin/bash -c \"npm run start:demo && tail -f /dev/null\""
   }
 }

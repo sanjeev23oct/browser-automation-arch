@@ -59,6 +59,6 @@ RUN chmod +x /start.sh
 # Expose ports for VNC and web access
 EXPOSE 5900 8080
 
-# Start the VNC server and run the Puppeteer script
+# Start the VNC server and run the demo script
 ENTRYPOINT ["/start.sh"]
-CMD ["npm", "run", "start:puppeteer"]
+CMD ["npm", "run", "start:demo"]
