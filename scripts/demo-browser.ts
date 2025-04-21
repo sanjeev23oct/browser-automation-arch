@@ -83,14 +83,14 @@ async function main() {
       <div class="container">
           <h1>Browser Automation Demo</h1>
           <p>This is a demonstration of browser automation with Puppeteer running in a Docker container.</p>
-          
+
           <div class="demo-section">
               <h2>Demo 1: Counter</h2>
               <p>Watch as the counter increments automatically:</p>
               <div id="counter">0</div>
               <button class="button" id="increment">Increment Manually</button>
           </div>
-          
+
           <div class="demo-section">
               <h2>Demo 2: Form Submission</h2>
               <form id="demoForm">
@@ -106,7 +106,7 @@ async function main() {
               </form>
               <div id="result"></div>
           </div>
-          
+
           <div class="demo-section">
               <h2>Information</h2>
               <p>This browser is running inside a Docker container and is being streamed to your browser via VNC.</p>
@@ -114,36 +114,36 @@ async function main() {
               <p class="success">✓ Demo is running successfully</p>
           </div>
       </div>
-      
+
       <script>
           // Counter demo
           let count = 0;
           const counterElement = document.getElementById('counter');
           const incrementButton = document.getElementById('increment');
-          
+
           function updateCounter() {
               counterElement.textContent = count;
           }
-          
+
           function incrementCounter() {
               count++;
               updateCounter();
           }
-          
+
           incrementButton.addEventListener('click', incrementCounter);
-          
+
           // Auto increment every 2 seconds
           setInterval(incrementCounter, 2000);
-          
+
           // Form submission demo
           const form = document.getElementById('demoForm');
           const resultDiv = document.getElementById('result');
-          
+
           form.addEventListener('submit', function(e) {
               e.preventDefault();
               const name = document.getElementById('name').value;
               const email = document.getElementById('email').value;
-              
+
               resultDiv.innerHTML = \`
                   <p><strong>Form submitted successfully!</strong></p>
                   <p>Name: \${name}</p>
@@ -154,13 +154,18 @@ async function main() {
   </body>
   </html>
   `;
-  
+
   fs.writeFileSync(demoHtmlPath, demoHtml);
   logger.info(`Demo HTML file created at ${demoHtmlPath}`);
 
-  // Launch browser
+  // Launch browser with retries
   logger.info('Launching browser');
-  const browser = await puppeteer.launch({
+  let browser;
+  let retries = 5;
+
+  while (retries > 0) {
+    try {
+      browser = await puppeteer.launch({
     headless: false,
     args: [
       '--no-sandbox',
@@ -171,46 +176,57 @@ async function main() {
       '--window-size=1280,720'
     ],
     slowMo: config.browser.slowMo
-  });
+      });
+      break; // Success, exit the retry loop
+    } catch (error) {
+      retries--;
+      logger.warn(`Failed to launch browser. Retries left: ${retries}`);
+      if (retries <= 0) {
+        throw error; // Re-throw if we're out of retries
+      }
+      // Wait before retrying
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
+  }
 
   try {
     const page = await browser.newPage();
-    
+
     // Set viewport size
     await page.setViewport({ width: 1280, height: 720 });
-    
+
     // Set default timeout
     page.setDefaultTimeout(config.browser.defaultTimeout);
-    
+
     // Navigate to demo page
     logger.info('Navigating to demo page');
     await page.goto(`file://${demoHtmlPath}`);
     logger.info('Demo page loaded');
-    
+
     // Take a screenshot
     await page.screenshot({ path: 'demo-page.png' });
     logger.info('Screenshot saved');
-    
+
     // Fill out the form
     logger.info('Filling out the form');
     await page.type('#name', 'Demo User');
     await page.type('#email', 'demo@example.com');
-    
+
     // Submit the form
     logger.info('Submitting the form');
     await page.click('#demoForm button[type="submit"]');
-    
+
     // Wait for result to appear
     await page.waitForSelector('#result');
-    
+
     // Take another screenshot
     await page.screenshot({ path: 'form-submitted.png' });
     logger.info('Form submission screenshot saved');
-    
+
     // Keep the browser open for demonstration
     logger.info('Browser will remain open for demonstration');
     // Don't close the browser: await browser.close();
-    
+
   } catch (error) {
     logger.error('Error during demo', error as Error);
   }

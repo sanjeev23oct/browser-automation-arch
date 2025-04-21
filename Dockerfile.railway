@@ -52,13 +52,13 @@ RUN mkdir -p /opt/novnc && \
     wget -qO- https://github.com/novnc/websockify/archive/v0.10.0.tar.gz | tar xz --strip 1 -C /opt/novnc/utils/websockify && \
     ln -s /opt/novnc/vnc.html /opt/novnc/index.html
 
-# Copy and set up the startup script
+# Copy and set up the startup scripts
 COPY start.sh /start.sh
-RUN chmod +x /start.sh
+COPY railway-entrypoint.sh /railway-entrypoint.sh
+RUN chmod +x /start.sh /railway-entrypoint.sh
 
 # Expose ports for VNC and web access
 EXPOSE 5900 8080
 
 # Start the VNC server and run the demo script
-ENTRYPOINT ["/start.sh"]
-CMD ["npm", "run", "start:demo"]
+CMD ["/railway-entrypoint.sh"]
