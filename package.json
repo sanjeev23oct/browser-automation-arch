@@ -1,0 +1,39 @@
+{
+  "name": "browser-automation-arch",
+  "version": "1.0.0",
+  "description": "Browser automation with Playwright and VNC",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "ts-node scripts/login-google.ts",
+    "start:puppeteer": "ts-node scripts/login-google-puppeteer.ts",
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "lint": "eslint . --ext .ts",
+    "test": "playwright test",
+    "docker:build": "docker-compose build",
+    "docker:up": "docker-compose up",
+    "docker:down": "docker-compose down",
+    "docker:build:light": "docker-compose -f docker-compose.light.yml build",
+    "docker:up:light": "docker-compose -f docker-compose.light.yml up"
+  },
+  "dependencies": {
+    "playwright": "^1.40.0",
+    "puppeteer": "^19.7.5",
+    "winston": "^3.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@playwright/test": "^1.43.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.0",
+    "@typescript-eslint/parser": "^5.59.0",
+    "eslint": "^8.38.0",
+    "rimraf": "^4.4.1",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "",
+  "license": "MIT"
+}

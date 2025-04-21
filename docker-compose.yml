@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  browser:
+    build: .
+    ports:
+      - "5900:5900"  # VNC port (for direct VNC clients)
+      - "8080:8080"  # Web-based VNC access port
+      - "3000:3000"  # Web service port if needed
+    volumes:
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+    environment:
+      - DISPLAY=:99
+      - RESOLUTION=1280x720x24
+    command: npm start

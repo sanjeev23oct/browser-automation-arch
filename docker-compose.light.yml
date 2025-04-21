@@ -1,0 +1,18 @@
+version: '3'
+
+services:
+  browser-light:
+    build:
+      context: .
+      dockerfile: Dockerfile.light
+    ports:
+      - "5901:5900"  # VNC port (for direct VNC clients)
+      - "8081:8080"  # Web-based VNC access port
+    volumes:
+      - ./src:/app/src
+      - ./scripts:/app/scripts
+      - ./data:/app/data
+    environment:
+      - DISPLAY=:1
+      - RESOLUTION=1280x720x24
+    command: /bin/bash -c "npm run start:puppeteer && tail -f /dev/null"

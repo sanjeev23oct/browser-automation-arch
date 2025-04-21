@@ -1,0 +1,14 @@
+{
+  "browser": {
+    "headless": false,
+    "slowMo": 50,
+    "defaultTimeout": 30000
+  },
+  "credentials": {
+    "google": {
+      "email": "your-email@gmail.com",
+      "password": "your-password"
+    }
+  },
+  "dataDir": "./data"
+}

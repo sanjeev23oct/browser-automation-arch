@@ -1,0 +1,67 @@
+FROM node:18-alpine
+
+# Install dependencies for Chromium and VNC
+RUN apk add --no-cache \
+    chromium \
+    xvfb \
+    x11vnc \
+    openbox \
+    ttf-freefont \
+    dbus \
+    mesa-gl \
+    libstdc++ \
+    harfbuzz \
+    nss \
+    freetype \
+    ttf-freefont \
+    font-noto-emoji \
+    wqy-zenhei \
+    python3 \
+    bash \
+    wget
+
+# Set up environment variables
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser \
+    DISPLAY=:1 \
+    RESOLUTION=1280x720x24
+
+# Set up working directory
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install puppeteer@19.7.5 --save && \
+    npm install
+
+# Copy source code
+COPY . .
+
+# Ensure config.json exists and has the right permissions
+RUN if [ -f config.json ]; then chmod 644 config.json; fi
+
+# Build TypeScript code
+RUN npm run build
+
+# Install noVNC (lightweight version)
+RUN mkdir -p /opt/novnc && \
+    wget -qO- https://github.com/novnc/noVNC/archive/v1.3.0.tar.gz | tar xz --strip 1 -C /opt/novnc && \
+    mkdir -p /opt/novnc/utils/websockify && \
+    wget -qO- https://github.com/novnc/websockify/archive/v0.10.0.tar.gz | tar xz --strip 1 -C /opt/novnc/utils/websockify && \
+    ln -s /opt/novnc/vnc.html /opt/novnc/index.html
+
+# Create a startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Create a landing page
+RUN mkdir -p /app/public && \
+    echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><meta http-equiv="refresh" content="0;url=/vnc.html"></head><body><p>Redirecting to browser automation...</p></body></html>' > /opt/novnc/redirect.html
+
+# Expose port for web access
+EXPOSE 8080
+
+# Start the VNC server and run the demo
+CMD ["/start.sh", "npm", "run", "start:puppeteer"]

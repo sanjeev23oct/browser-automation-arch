@@ -1,0 +1,3 @@
+dockerfile: Dockerfile.huggingface
+base_image: node:18-alpine
+port: 8080
