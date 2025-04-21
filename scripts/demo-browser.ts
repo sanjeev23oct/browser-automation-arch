@@ -158,38 +158,42 @@ async function main() {
   fs.writeFileSync(demoHtmlPath, demoHtml);
   logger.info(`Demo HTML file created at ${demoHtmlPath}`);
 
-  // Launch browser with retries
-  logger.info('Launching browser');
-  let browser;
-  let retries = 5;
-
-  while (retries > 0) {
-    try {
-      browser = await puppeteer.launch({
-    headless: false,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-dev-shm-usage',
-      '--disable-accelerated-2d-canvas',
-      '--disable-gpu',
-      '--window-size=1280,720'
-    ],
-    slowMo: config.browser.slowMo
-      });
-      break; // Success, exit the retry loop
-    } catch (error) {
-      retries--;
-      logger.warn(`Failed to launch browser. Retries left: ${retries}`);
-      if (retries <= 0) {
-        throw error; // Re-throw if we're out of retries
-      }
-      // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, 5000));
-    }
-  }
-
   try {
+    // Launch browser with retries
+    logger.info('Launching browser');
+    let browser = null;
+    let retries = 5;
+
+    while (retries > 0) {
+      try {
+        browser = await puppeteer.launch({
+          headless: false,
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu',
+            '--window-size=1280,720'
+          ],
+          slowMo: config.browser.slowMo
+        });
+        break; // Success, exit the retry loop
+      } catch (error) {
+        retries--;
+        logger.warn(`Failed to launch browser. Retries left: ${retries}`);
+        if (retries <= 0) {
+          throw error; // Re-throw if we're out of retries
+        }
+        // Wait before retrying
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
+    }
+
+    if (!browser) {
+      throw new Error('Failed to launch browser after multiple attempts');
+    }
+
     const page = await browser.newPage();
 
     // Set viewport size
@@ -230,6 +234,11 @@ async function main() {
   } catch (error) {
     logger.error('Error during demo', error as Error);
   }
+
+  // Keep the script running to prevent the container from exiting
+  logger.info('Demo script will keep running to maintain the browser session');
+  // This will keep the Node.js process running
+  setInterval(() => {}, 1000);
 }
 
 // Run the main function

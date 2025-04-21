@@ -32,7 +32,8 @@ sleep 2
 
 # Run the demo script
 echo "Starting demo script..."
-npm run start:demo
+npm run start:demo &
 
 # Keep the container running
+echo "Container will remain running..."
 tail -f /dev/null
